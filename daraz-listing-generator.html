@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ListingAI – Daraz Seller Tool</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #F5F4FF;
+      min-height: 100vh;
+      color: #1a1838;
+    }
+
+    .app { min-height: 100vh; background: #F5F4FF; }
+
+    /* Sidebar */
+    .sidebar {
+      position: fixed; top: 0; left: 0;
+      width: 240px; height: 100vh;
+      background: #26215C;
+      padding: 0; z-index: 100;
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sidebar-logo {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .sidebar-logo h1 {
+      font-family: 'Sora', sans-serif;
+      font-size: 15px; font-weight: 700;
+      color: #fff; letter-spacing: -0.3px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .logo-icon {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: #7F77DD;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+    }
+
+    .sidebar-sub {
+      font-size: 10px; font-weight: 400;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.5px; margin-top: 2px;
+    }
+
+    .sidebar-nav { padding: 16px 12px; flex: 1; }
+
+    .nav-label {
+      font-size: 10px; font-weight: 600;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 1px; text-transform: uppercase;
+      padding: 0 8px; margin-bottom: 8px;
+    }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 10px; border-radius: 8px;
+      cursor: pointer; transition: all 0.15s ease;
+      color: rgba(255,255,255,0.55);
+      font-size: 13.5px; font-weight: 500;
+      margin-bottom: 2px;
+      border: none; background: none; width: 100%; text-align: left;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .nav-item:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.85); }
+    .nav-item.active { background: #534AB7; color: #fff; }
+    .nav-item svg { flex-shrink: 0; }
+
+    .nav-badge {
+      margin-left: auto;
+      background: #7F77DD; color: #fff;
+      border-radius: 10px; font-size: 10px;
+      font-weight: 700; padding: 1px 7px;
+    }
+
+    .sidebar-footer {
+      padding: 16px 12px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      font-size: 11px; color: rgba(255,255,255,0.3);
+      text-align: center;
+    }
+
+    /* Main */
+    .main {
+      margin-left: 240px;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+    }
+
+    /* Topbar */
+    .topbar {
+      background: #fff;
+      border-bottom: 1px solid #e8e6ff;
+      padding: 0 32px;
+      height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+    }
+
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+
+    .topbar-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 15px; font-weight: 600;
+      color: #26215C;
+    }
+
+    .topbar-badge {
+      font-size: 11px; font-weight: 600;
+      background: #EEEDFE; color: #534AB7;
+      padding: 3px 10px; border-radius: 20px;
+      border: 1px solid #CECBF6;
+    }
+
+    /* Content */
+    .content { padding: 28px 32px; flex: 1; }
+
+    .page-header { margin-bottom: 24px; }
+    .page-header h2 {
+      font-family: 'Sora', sans-serif;
+      font-size: 22px; font-weight: 700;
+      color: #26215C; margin-bottom: 4px;
+    }
+    .page-header p { font-size: 13.5px; color: #7f7fa0; }
+
+    /* Two-column */
+    .two-col {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* Card */
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid #e8e6ff;
+      padding: 22px;
+      box-shadow: 0 2px 12px rgba(83,74,183,0.04);
+    }
+
+    .card-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 13px; font-weight: 600;
+      color: #26215C; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .card-title svg { color: #7F77DD; }
+
+    /* Form */
+    .form-group { margin-bottom: 16px; }
+
+    .form-label {
+      display: block;
+      font-size: 12px; font-weight: 600;
+      color: #534AB7; margin-bottom: 6px;
+      letter-spacing: 0.2px;
+      text-transform: uppercase;
+    }
+
+    .form-input, .form-textarea {
+      width: 100%;
+      background: #FAFAFE;
+      border: 1.5px solid #e8e6ff;
+      border-radius: 10px;
+      padding: 10px 13px;
+      font-size: 13.5px; font-weight: 400;
+      color: #26215C;
+      font-family: 'DM Sans', sans-serif;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      resize: none;
+    }
+
+    .form-input:focus, .form-textarea:focus {
+      border-color: #7F77DD;
+      box-shadow: 0 0 0 3px rgba(127,119,221,0.12);
+      background: #fff;
+    }
+
+    .form-textarea { min-height: 120px; line-height: 1.6; }
+
+    .char-count { font-size: 11px; color: #a0a0c0; text-align: right; margin-top: 4px; }
+
+    /* Generate button */
+    .btn-generate {
+      width: 100%; padding: 13px;
+      background: linear-gradient(135deg, #534AB7 0%, #7F77DD 100%);
+      border: none; border-radius: 10px;
+      color: #fff; font-size: 14px; font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: opacity 0.2s, transform 0.1s;
+      letter-spacing: -0.2px;
+    }
+
+    .btn-generate:hover:not(:disabled) { opacity: 0.93; }
+    .btn-generate:active:not(:disabled) { transform: scale(0.99); }
+    .btn-generate:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Result */
+    .result-empty {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      min-height: 360px; color: #b0b0d0;
+      text-align: center; gap: 12px;
+    }
+    .result-empty svg { color: #CECBF6; }
+    .result-empty h3 { font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 600; color: #c0bce8; }
+    .result-empty p { font-size: 13px; max-width: 240px; line-height: 1.6; }
+
+    .result-grid { display: flex; flex-direction: column; gap: 16px; }
+
+    .result-section {
+      border: 1px solid #ece9ff;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: box-shadow 0.2s;
+    }
+    .result-section:hover { box-shadow: 0 2px 12px rgba(83,74,183,0.07); }
+
+    .result-section-header {
+      background: #FAFAFE;
+      padding: 10px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid #ece9ff;
+    }
+
+    .result-section-label {
+      font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.8px;
+      color: #7F77DD; display: flex; align-items: center; gap: 6px;
+    }
+
+    .result-section-body {
+      padding: 14px 16px;
+      background: #fff;
+      font-size: 13.5px; line-height: 1.75;
+      color: #26215C;
+      white-space: pre-wrap;
+    }
+
+    /* Copy button */
+    .btn-copy {
+      display: flex; align-items: center; gap: 4px;
+      padding: 5px 10px; border-radius: 7px;
+      background: #EEEDFE; border: 1px solid #CECBF6;
+      color: #534AB7; font-size: 11px; font-weight: 600;
+      cursor: pointer; transition: all 0.15s;
+      font-family: 'DM Sans', sans-serif;
+      letter-spacing: 0.1px;
+    }
+    .btn-copy:hover { background: #CECBF6; }
+    .btn-copy.copied { background: #E6F9F0; border-color: #9FE1CB; color: #0F6E56; }
+
+    /* Keywords */
+    .keywords-wrap { display: flex; flex-wrap: wrap; gap: 7px; padding: 14px 16px; }
+    .keyword-tag {
+      background: #EEEDFE; color: #534AB7;
+      border: 1px solid #CECBF6;
+      padding: 4px 11px; border-radius: 20px;
+      font-size: 12px; font-weight: 500;
+      cursor: default; transition: background 0.15s;
+    }
+    .keyword-tag:hover { background: #CECBF6; }
+
+    /* Bullets */
+    .bullet-list { list-style: none; padding: 8px 16px; margin: 0; }
+    .bullet-list li {
+      padding: 6px 0; display: flex; align-items: flex-start; gap: 10px;
+      font-size: 13.5px; line-height: 1.6; color: #26215C;
+      border-bottom: 1px solid #f0eeff;
+    }
+    .bullet-list li:last-child { border-bottom: none; }
+    .bullet-icon {
+      width: 18px; height: 18px; border-radius: 5px;
+      background: #7F77DD; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 2px;
+      font-size: 9px; font-weight: 700;
+    }
+
+    /* History */
+    .history-empty { text-align: center; padding: 32px 16px; color: #b0b0d0; font-size: 13px; }
+    .history-item {
+      border: 1px solid #ece9ff; border-radius: 11px;
+      margin-bottom: 10px; overflow: hidden;
+      transition: box-shadow 0.2s; cursor: pointer;
+    }
+    .history-item:hover { box-shadow: 0 2px 10px rgba(83,74,183,0.08); }
+    .history-item-header {
+      padding: 12px 14px; background: #FAFAFE;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .history-product-name {
+      font-weight: 600; font-size: 13px; color: #26215C;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 160px;
+    }
+    .history-time { font-size: 11px; color: #a0a0c0; }
+    .history-preview {
+      padding: 10px 14px; font-size: 12px; color: #7f7fa0;
+      line-height: 1.6; background: #fff;
+      display: -webkit-box; -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .btn-restore {
+      margin: 8px 14px 12px;
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 10px; border-radius: 7px;
+      background: #fff; border: 1px solid #CECBF6;
+      color: #534AB7; font-size: 11px; font-weight: 600;
+      cursor: pointer; transition: all 0.15s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .btn-restore:hover { background: #EEEDFE; }
+
+    /* Stats */
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+    .stat-card { background: #fff; border-radius: 12px; border: 1px solid #e8e6ff; padding: 16px 18px; }
+    .stat-label { font-size: 11px; font-weight: 600; color: #a0a0c0; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-value { font-family: 'Sora', sans-serif; font-size: 24px; font-weight: 700; color: #26215C; margin-top: 4px; }
+    .stat-value span { font-size: 13px; color: #7F77DD; font-weight: 500; }
+
+    /* Hamburger */
+    .hamburger {
+      display: none;
+      background: none; border: none; cursor: pointer;
+      padding: 4px; color: #26215C;
+    }
+
+    /* Overlay */
+    .mobile-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(38,33,92,0.5);
+      z-index: 90;
+    }
+    .mobile-overlay.show { display: block; }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: #26215C; color: #fff;
+      padding: 10px 18px; border-radius: 10px;
+      font-size: 13px; font-weight: 500;
+      z-index: 999;
+      display: flex; align-items: center; gap: 8px;
+      animation: slideUp 0.3s ease;
+      box-shadow: 0 8px 24px rgba(38,33,92,0.25);
+    }
+    .toast.hidden { display: none; }
+
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .divider { height: 1px; background: #f0eeff; margin: 20px 0; }
+
+    /* Tips */
+    .tip-card { display: flex; gap: 16px; align-items: flex-start; }
+    .tip-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+    .tip-title { font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 600; color: #26215C; margin-bottom: 6px; }
+    .tip-body { font-size: 13.5px; color: #7f7fa0; line-height: 1.7; }
+
+    /* Tabs */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Copy all button positioning */
+    .copy-all-btn-wrap { margin-left: auto; }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .sidebar { transform: translateX(-100%); transition: transform 0.25s ease; }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .mobile-overlay.show { display: block; }
+      .hamburger { display: flex; }
+      .two-col { grid-template-columns: 1fr; }
+      .content { padding: 20px 16px; }
+      .topbar { padding: 0 16px; }
+      .stats-row { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 500px) {
+      .stats-row { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <h1>
+        <div class="logo-icon">🛒</div>
+        <div>
+          <div>ListingAI</div>
+          <div class="sidebar-sub">FOR DARAZ SELLERS</div>
+        </div>
+      </h1>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-label">Tools</div>
+      <button class="nav-item active" onclick="switchTab('generator')" id="nav-generator">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+        Listing Generator
+      </button>
+      <button class="nav-item" onclick="switchTab('history')" id="nav-history">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        History
+        <span class="nav-badge" id="history-badge" style="display:none">0</span>
+      </button>
+      <button class="nav-item" onclick="switchTab('tips')" id="nav-tips">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        Tips & Guide
+      </button>
+    </nav>
+    <div class="sidebar-footer">Powered by Claude AI</div>
+  </aside>
+
+  <!-- Mobile overlay -->
+  <div class="mobile-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <main class="main">
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" onclick="openSidebar()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <span class="topbar-title" id="topbar-title">Listing Generator</span>
+      </div>
+      <span class="topbar-badge">Daraz Pakistan</span>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- Generator Tab -->
+      <div class="tab-content active" id="tab-generator">
+        <div class="page-header">
+          <h2>Generate Your Listing</h2>
+          <p>Enter product details — AI will create your full Daraz-optimized listing in seconds</p>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-label">Generated</div>
+            <div class="stat-value" id="stat-total">0 <span>total</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Keywords</div>
+            <div class="stat-value" id="stat-keywords">0 <span>tags</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Words</div>
+            <div class="stat-value" id="stat-words">— <span>words</span></div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <!-- Input -->
+          <div class="card">
+            <div class="card-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Product Information
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Product Name *</label>
+              <input class="form-input" id="productName" placeholder="e.g. Samsung Galaxy A55 5G" maxlength="120" oninput="updateCharCount('productName','pnCount',120)" />
+              <div class="char-count" id="pnCount">0/120</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Product Features & Details</label>
+              <textarea class="form-textarea" id="features" placeholder="e.g. 6.7 inch display, 50MP camera, 5000mAh battery, 8GB RAM, available in blue and black, 1 year warranty..." maxlength="600" oninput="updateCharCount('features','ftCount',600)"></textarea>
+              <div class="char-count" id="ftCount">0/600</div>
+            </div>
+
+            <div class="divider"></div>
+
+            <button class="btn-generate" id="generateBtn" onclick="generate()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              Generate Daraz Listing
+            </button>
+          </div>
+
+          <!-- Results -->
+          <div class="card" id="resultsCard" style="min-height:360px">
+            <div class="card-title" id="resultCardTitle">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              Generated Listing
+            </div>
+            <div id="resultPanel">
+              <div class="result-empty">
+                <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                  <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/>
+                </svg>
+                <h3>No listing yet</h3>
+                <p>Fill in your product details and hit Generate to create your Daraz listing</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- History Tab -->
+      <div class="tab-content" id="tab-history">
+        <div class="page-header">
+          <h2>Generation History</h2>
+          <p id="history-subtitle">Your generated listings — click to restore any</p>
+        </div>
+        <div class="card">
+          <div class="card-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Recent Listings (<span id="history-count">0</span>)
+          </div>
+          <div id="historyPanel">
+            <div class="history-empty">No history yet. Generate your first listing!</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tips Tab -->
+      <div class="tab-content" id="tab-tips">
+        <div class="page-header">
+          <h2>Tips & Guide</h2>
+          <p>How to get the best results from your Daraz listings</p>
+        </div>
+        <div style="display:grid;gap:16px">
+          <div class="card"><div class="tip-card"><div class="tip-icon">📝</div><div><div class="tip-title">Be specific with features</div><div class="tip-body">Include dimensions, materials, colors, warranty, and compatibility. The more detail you provide, the better the AI can craft targeted keywords and descriptions.</div></div></div></div>
+          <div class="card"><div class="tip-card"><div class="tip-icon">🔍</div><div><div class="tip-title">SEO Title best practices</div><div class="tip-body">Daraz titles perform best at 80-120 characters. Include the brand, product type, key feature, and a size or color variant when applicable.</div></div></div></div>
+          <div class="card"><div class="tip-card"><div class="tip-icon">📦</div><div><div class="tip-title">Bullet points that convert</div><div class="tip-body">Each bullet should address a customer concern or highlight a unique benefit. Lead with the strongest selling point and end with warranty/after-sales info.</div></div></div></div>
+          <div class="card"><div class="tip-card"><div class="tip-icon">🏷️</div><div><div class="tip-title">Keyword strategy</div><div class="tip-body">Use a mix of broad (e.g. 'mobile phone') and specific keywords (e.g. 'Samsung 5G phone Pakistan'). Include both English and common Urdu transliterations when relevant.</div></div></div></div>
+          <div class="card"><div class="tip-card"><div class="tip-icon">📊</div><div><div class="tip-title">Test and iterate</div><div class="tip-body">Generate multiple versions by varying your feature descriptions. Compare titles and pick the one that best balances clarity, keyword density, and appeal.</div></div></div></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast -->
+  <div class="toast hidden" id="toast"></div>
+
+</div>
+
+<script>
+  // ─── State ───────────────────────────────────────────────
+  let history = [];
+  let currentResult = null;
+
+  // ─── Tab switching ────────────────────────────────────────
+  const tabTitles = { generator: 'Listing Generator', history: 'Generation History', tips: 'Tips & Guide' };
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    document.getElementById('nav-' + tab).classList.add('active');
+    document.getElementById('topbar-title').textContent = tabTitles[tab];
+    closeSidebar();
+  }
+
+  // ─── Sidebar ──────────────────────────────────────────────
+  function openSidebar() {
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('overlay').classList.add('show');
+  }
+  function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('overlay').classList.remove('show');
+  }
+
+  // ─── Char count ───────────────────────────────────────────
+  function updateCharCount(inputId, countId, max) {
+    const len = document.getElementById(inputId).value.length;
+    document.getElementById(countId).textContent = len + '/' + max;
+  }
+
+  // ─── Toast ────────────────────────────────────────────────
+  let toastTimer;
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.remove('hidden');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.add('hidden'), 2500);
+  }
+
+  // ─── Copy ─────────────────────────────────────────────────
+  function copyText(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+      const orig = btn.innerHTML;
+      btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Copied';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  // ─── Render result ────────────────────────────────────────
+  function renderResult(result) {
+    const bullets = result.bullets || [];
+    const keywords = result.keywords || [];
+
+    // update copy-all button in card title
+    document.getElementById('resultCardTitle').innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Generated Listing
+      <button class="btn-copy" style="margin-left:auto" onclick="copyAll()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Copy All
+      </button>
+    `;
+
+    const bulletsHTML = bullets.map((b, i) =>
+      `<li><div class="bullet-icon">${i+1}</div><span>${escHtml(b)}</span></li>`
+    ).join('');
+
+    const keywordsHTML = keywords.map(kw =>
+      `<span class="keyword-tag">${escHtml(kw)}</span>`
+    ).join('');
+
+    document.getElementById('resultPanel').innerHTML = `
+      <div class="result-grid">
+        <div class="result-section">
+          <div class="result-section-header">
+            <span class="result-section-label">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 6h16M4 12h16M4 18h7"/></svg>SEO Title
+            </span>
+            <button class="btn-copy" onclick="copyText(${JSON.stringify(result.title)}, this)">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy
+            </button>
+          </div>
+          <div class="result-section-body" style="font-size:14px;font-weight:600;color:#26215C">${escHtml(result.title)}</div>
+        </div>
+
+        <div class="result-section">
+          <div class="result-section-header">
+            <span class="result-section-label">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Product Description
+            </span>
+            <button class="btn-copy" onclick="copyText(${JSON.stringify(result.description)}, this)">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy
+            </button>
+          </div>
+          <div class="result-section-body">${escHtml(result.description)}</div>
+        </div>
+
+        <div class="result-section">
+          <div class="result-section-header">
+            <span class="result-section-label">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Bullet Points
+            </span>
+            <button class="btn-copy" onclick="copyText(${JSON.stringify(bullets.join('\n'))}, this)">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy
+            </button>
+          </div>
+          <ul class="bullet-list">${bulletsHTML}</ul>
+        </div>
+
+        <div class="result-section">
+          <div class="result-section-header">
+            <span class="result-section-label">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Search Keywords
+            </span>
+            <button class="btn-copy" onclick="copyText(${JSON.stringify(keywords.join(', '))}, this)">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy
+            </button>
+          </div>
+          <div class="keywords-wrap">${keywordsHTML}</div>
+        </div>
+      </div>
+    `;
+
+    // update stats
+    const words = (result.description || '').split(' ').length + (result.title || '').split(' ').length;
+    document.getElementById('stat-keywords').innerHTML = keywords.length + ' <span>tags</span>';
+    document.getElementById('stat-words').innerHTML = words + ' <span>words</span>';
+  }
+
+  function copyAll() {
+    if (!currentResult) return;
+    const r = currentResult;
+    const text = `TITLE:\n${r.title}\n\nDESCRIPTION:\n${r.description}\n\nBULLET POINTS:\n${(r.bullets||[]).join('\n')}\n\nKEYWORDS:\n${(r.keywords||[]).join(', ')}`;
+    navigator.clipboard.writeText(text).then(() => showToast('Full listing copied!'));
+  }
+
+  function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ─── History ──────────────────────────────────────────────
+  function updateHistoryUI() {
+    const count = history.length;
+    document.getElementById('stat-total').innerHTML = count + ' <span>total</span>';
+    document.getElementById('history-count').textContent = count;
+    document.getElementById('history-subtitle').textContent = `Your last ${count} generated listings — click to restore any`;
+
+    const badge = document.getElementById('history-badge');
+    if (count > 0) { badge.style.display = ''; badge.textContent = count; }
+    else badge.style.display = 'none';
+
+    const panel = document.getElementById('historyPanel');
+    if (count === 0) {
+      panel.innerHTML = '<div class="history-empty">No history yet. Generate your first listing!</div>';
+      return;
+    }
+
+    panel.innerHTML = history.map((item, i) => `
+      <div class="history-item" onclick="restoreFromHistory(${i})">
+        <div class="history-item-header">
+          <span class="history-product-name">${escHtml(item.productName)}</span>
+          <span class="history-time">${item.timestamp}</span>
+        </div>
+        <div class="history-preview">${escHtml(item.result.title)}</div>
+        <button class="btn-restore" onclick="event.stopPropagation(); restoreFromHistory(${i})">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+          Restore
+        </button>
+      </div>
+    `).join('');
+  }
+
+  function restoreFromHistory(idx) {
+    const item = history[idx];
+    document.getElementById('productName').value = item.productName;
+    document.getElementById('features').value = item.features || '';
+    updateCharCount('productName', 'pnCount', 120);
+    updateCharCount('features', 'ftCount', 600);
+    currentResult = item.result;
+    renderResult(item.result);
+    switchTab('generator');
+    showToast('Listing restored!');
+  }
+
+  // ─── Generate ─────────────────────────────────────────────
+  async function generate() {
+    const productName = document.getElementById('productName').value.trim();
+    const features = document.getElementById('features').value.trim();
+    if (!productName) return;
+
+    const btn = document.getElementById('generateBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> Generating listing...';
+    currentResult = null;
+
+    const systemPrompt = `You are an expert Daraz (Pakistani e-commerce) product listing specialist. 
+You create SEO-optimized listings that rank high on Daraz search.
+Always respond with valid JSON only — no markdown, no extra text.
+JSON structure:
+{
+  "title": "...",
+  "description": "...",
+  "bullets": ["...", "...", "...", "...", "..."],
+  "keywords": ["...", "...", "...", "...", "...", "...", "...", "...", "...", "..."]
+}
+Rules:
+- title: max 120 chars, keyword-rich, includes brand/product type/key feature
+- description: 150-200 words, engaging, mentions key benefits, ends with a call to action
+- bullets: exactly 5 bullet points, each starting with a strong word, highlighting a key feature/benefit
+- keywords: exactly 10 relevant Daraz search keywords (short phrases buyers use)`;
+
+    const userPrompt = `Create a Daraz product listing for:
+Product Name: ${productName}
+Product Features / Details: ${features || 'No additional features provided'}
+
+Generate an SEO-friendly title, detailed description, 5 bullet points, and 10 search keywords optimized for Daraz Pakistan.`;
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: userPrompt }]
+        })
+      });
+
+      const data = await response.json();
+      const text = data.content?.[0]?.text || '{}';
+      const clean = text.replace(/```json|```/g, '').trim();
+      const parsed = JSON.parse(clean);
+
+      currentResult = parsed;
+      renderResult(parsed);
+
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit' });
+      history.unshift({ productName, features, result: parsed, timestamp: timeStr });
+      if (history.length > 20) history = history.slice(0, 20);
+      updateHistoryUI();
+      showToast('✨ Listing generated successfully!');
+    } catch (err) {
+      showToast('❌ Failed to generate. Please try again.');
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = `
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Generate Daraz Listing
+    `;
+  }
+
+  // ─── Init ─────────────────────────────────────────────────
+  updateHistoryUI();
+</script>
+</body>
+</html>
